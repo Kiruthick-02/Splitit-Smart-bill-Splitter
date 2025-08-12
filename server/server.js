@@ -20,30 +20,42 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// ✅ Allow both local and production frontends
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://splitit-zeta.vercel.app"
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 }));
+
 app.use(express.json({ limit: '5mb' }));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   }
 });
 
-// This map will store which user is connected to which socket
 // Map<userId, socketId>
 const userSocketMap = new Map();
 
-// Middleware to make io and the user map available in our routes
 app.use((req, res, next) => {
-    req.io = io;
-    req.userSocketMap = userSocketMap;
-    next();
+  req.io = io;
+  req.userSocketMap = userSocketMap;
+  next();
 });
 
 // API Routes
@@ -66,8 +78,8 @@ io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
   socket.on('userConnected', (userId) => {
-      console.log(`User ${userId} mapped to socket ${socket.id}`);
-      userSocketMap.set(userId.toString(), socket.id); // Ensure userId is string
+    console.log(`User ${userId} mapped to socket ${socket.id}`);
+    userSocketMap.set(userId.toString(), socket.id);
   });
 
   socket.on('joinGroup', (groupId) => {
@@ -78,20 +90,19 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', async (payload) => {
     const savedMessage = await postMessage(payload);
     if (savedMessage) {
-        io.to(payload.groupId).emit('receiveMessage', savedMessage);
-        console.log(`Message sent in group ${payload.groupId}`);
+      io.to(payload.groupId).emit('receiveMessage', savedMessage);
+      console.log(`Message sent in group ${payload.groupId}`);
     }
   });
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
-    // Find and remove the user from the map on disconnect
     for (let [userId, socketId] of userSocketMap.entries()) {
-        if (socketId === socket.id) {
-            userSocketMap.delete(userId);
-            console.log(`Removed user ${userId} from socket map`);
-            break;
-        }
+      if (socketId === socket.id) {
+        userSocketMap.delete(userId);
+        console.log(`Removed user ${userId} from socket map`);
+        break;
+      }
     }
   });
 });
