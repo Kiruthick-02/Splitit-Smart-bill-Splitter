@@ -1,0 +1,27 @@
+{
+  "name": "splitit-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install",
+    "install": "npm run install:server && npm run install:client",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm start",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\""
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.0",
+    "cloudinary": "^1.41.3",
+    "mongodb": "^6.18.0",
+    "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-image-crop": "^11.0.10",
+    "socket.io-client": "^4.8.1"
+  }
+}
