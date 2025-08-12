@@ -96,4 +96,8 @@ io.on('connection', (socket) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.json({ message: "API is running." });
+});
+
 httpServer.listen(PORT, '0.0.0.0', () => console.log(`Server listening on port ${PORT}`));
