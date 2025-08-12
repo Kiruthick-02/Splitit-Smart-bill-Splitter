@@ -1,5 +1,4 @@
 import User from '../models/User.js';
-import { v2 as cloudinary } from 'cloudinary';
 
 // @desc    Get user profile
 export const getUserProfile = async (req, res) => {
@@ -54,35 +53,7 @@ export const getUsers = async (req, res) => {
   }
 };
 
-// @desc    Upload user profile avatar from a data URL
+// @desc    Upload user profile avatar — disabled since Cloudinary removed
 export const uploadProfileAvatar = async (req, res) => {
-    try {
-        const { image } = req.body; // Expects a base64 image string
-
-        if (!image) {
-            return res.status(400).json({ message: 'No image data provided.' });
-        }
-
-        const user = await User.findById(req.user._id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
-        }
-
-        const uploadedResponse = await cloudinary.uploader.upload(image, {
-            folder: 'SplitIt_Avatars',
-            resource_type: 'image',
-        });
-
-        user.avatar = uploadedResponse.secure_url;
-        await user.save();
-
-        res.json({
-            message: 'Avatar uploaded successfully.',
-            avatarUrl: user.avatar
-        });
-        
-    } catch (error) {
-        console.error("Avatar Upload Error:", error);
-        res.status(500).json({ message: 'Server error while uploading avatar.' });
-    }
+  res.status(501).json({ message: 'Avatar upload not implemented. Cloudinary integration removed.' });
 };
